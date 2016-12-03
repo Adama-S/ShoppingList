@@ -2,51 +2,44 @@ package com.example.adamJeann.shoppinglist;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.annotation.TargetApi;
+import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.content.Loader;
+import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
-
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
-import android.view.KeyEvent;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-import static android.Manifest.permission.READ_CONTACTS;
+import Util.MyAsyncTask;
+import Util.Urls;
 
 /**
  * A login screen that offers login via email/password.
  */
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
+    SharedPreferences sharedPreferences = null;
+    final MyAsyncTask asyncTask = new MyAsyncTask();
+    /**
+     * Keep track of the login task to ensure we can cancel it if requested.
+     */
 
-
-
+    //private UserLoginTask mAuthTask = null;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
@@ -62,16 +55,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mEmailView = (AutoCompleteTextView) findViewById(R.id.email_login);
 
         mPasswordView = (EditText) findViewById(R.id.password_login);
-        mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-            @Override
-            public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-                if (id == R.id.login || id == EditorInfo.IME_NULL) {
-                    attemptLogin();
-                    return true;
-                }
-                return false;
-            }
-        });
 
         if(!isOnline()){
             Toast toast = Toast.makeText(getApplicationContext(), "Please Check your internet access!", Toast.LENGTH_LONG);
@@ -90,9 +73,80 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mProgressView = findViewById(R.id.login_progress);
 
 
+
+
+        asyncTask.setListener(new IRequestListener() {
+
+            @Override
+            public void onSuccess(JSONObject object) {
+                sharedPreferences = getSharedPreferences("mySharedPreference", 0);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                String firstname;
+                String lastname;
+                String email;
+                String token;
+                String msg;
+
+
+                mEmailView.setError(null);
+                mPasswordView.setError(null);
+                View focusView;
+                View focusView2;
+
+                try {
+
+
+                    String codeTxt = object.getString("code");
+                    int code = Integer.parseInt(codeTxt);
+
+
+                    if(code == 0){
+                        JSONObject resultObject = object.getJSONObject("result");
+                        firstname = resultObject.getString("firstname");
+                        lastname = resultObject.getString("lastname");
+                        email = resultObject.getString("email");
+                        token = resultObject.getString("token");
+                        System.out.println("email : " + email);
+                        editor.putString("firstname",firstname);
+                        editor.putString("lastname",lastname);
+                        editor.putString("email",email);
+                        editor.putString("tokenUser",token);
+                        editor.commit();
+                        showProgress(true);
+                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+
+                    }else{
+
+                        msg = object.getString("msg");
+
+                        mPasswordView.setError(getString(R.string.error_invalid_password));
+                        focusView = mPasswordView;
+                        mEmailView.setError(getString(R.string.error_invalid_email));
+                        focusView2 = mEmailView;
+                        focusView.requestFocus();
+                        focusView2.requestFocus();
+                        Toast toast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG);
+                        toast.show();
+                    }
+
+
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+
+
+            @Override
+            public void onFail() {
+                Log.e("Error","test error onFailed");
+            }
+        });
+
         Button btnRegister = (Button) findViewById(R.id.switchRegister);
 
-        btnRegister.setOnClickListener(new View.OnClickListener() {
+        btnRegister.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
@@ -121,6 +175,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      */
     private void attemptLogin() {
 
+        String url;
+
         // Reset errors.
         mEmailView.setError(null);
         mPasswordView.setError(null);
@@ -128,6 +184,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         // Store values at the time of the login attempt.
         String email = mEmailView.getText().toString();
         String password = mPasswordView.getText().toString();
+
 
         boolean cancel = false;
         View focusView = null;
@@ -150,16 +207,25 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             cancel = true;
         }
 
+        // Check for a valid password.
+        if (TextUtils.isEmpty(password)) {
+            mPasswordView.setError(getString(R.string.error_field_required));
+            focusView = mPasswordView;
+            cancel = true;
+        }
+
         if (cancel) {
-            // There was an error; don't attempt login and focus the first
-            // form field with an error.
+
             focusView.requestFocus();
         } else {
-            // Show a progress spinner, and kick off a background task to
-            // perform the user login attempt.
-            showProgress(true);
+
+            url = Urls.WS_CONNECT_URL+"?email="+email+"&password="+password;
+            url = url.replace(" ","");
+            asyncTask.execute(url);
 
         }
+
+
     }
 
     private boolean isEmailValid(String email) {
@@ -175,7 +241,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     /**
      * Shows the progress UI and hides the login form.
      */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB_MR2)
     private void showProgress(final boolean show) {
         // On Honeycomb MR2 we have the ViewPropertyAnimator APIs, which allow
         // for very easy animations. If available, use these APIs to fade-in
@@ -215,7 +280,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
 
     }
 
@@ -225,7 +290,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
 
+    @Override
+    public void onStart() {
+        super.onStart();
+    }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+    }
 
 }
 
