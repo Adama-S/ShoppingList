@@ -34,7 +34,7 @@ import Util.Urls;
 public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
     SharedPreferences sharedPreferences = null;
-    final MyAsyncTask asyncTask = new MyAsyncTask();
+
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
@@ -56,6 +56,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         mPasswordView = (EditText) findViewById(R.id.password_login);
 
+        //check if the phone is connected to network
         if(!isOnline()){
             Toast toast = Toast.makeText(getApplicationContext(), "Please Check your internet access!", Toast.LENGTH_LONG);
             toast.show();
@@ -72,78 +73,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
-
-
-
-        asyncTask.setListener(new IRequestListener() {
-
-            @Override
-            public void onSuccess(JSONObject object) {
-                sharedPreferences = getSharedPreferences("mySharedPreference", 0);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
-                String firstname;
-                String lastname;
-                String email;
-                String token;
-                String msg;
-
-
-                mEmailView.setError(null);
-                mPasswordView.setError(null);
-                View focusView;
-                View focusView2;
-
-                try {
-
-
-                    String codeTxt = object.getString("code");
-                    int code = Integer.parseInt(codeTxt);
-
-
-                    if(code == 0){
-                        JSONObject resultObject = object.getJSONObject("result");
-                        firstname = resultObject.getString("firstname");
-                        lastname = resultObject.getString("lastname");
-                        email = resultObject.getString("email");
-                        token = resultObject.getString("token");
-                        System.out.println("email : " + email);
-                        editor.putString("firstname",firstname);
-                        editor.putString("lastname",lastname);
-                        editor.putString("email",email);
-                        editor.putString("tokenUser",token);
-                        editor.commit();
-                        showProgress(true);
-                        startActivity(new Intent(LoginActivity.this, HomeActivity.class));
-
-                    }else{
-
-                        msg = object.getString("msg");
-
-                        mPasswordView.setError(getString(R.string.error_invalid_password));
-                        focusView = mPasswordView;
-                        mEmailView.setError(getString(R.string.error_invalid_email));
-                        focusView2 = mEmailView;
-                        focusView.requestFocus();
-                        focusView2.requestFocus();
-                        Toast toast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG);
-                        toast.show();
-                    }
-
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-            }
-
-
-            @Override
-            public void onFail() {
-                Log.e("Error","test error onFailed");
-            }
-        });
-
         Button btnRegister = (Button) findViewById(R.id.switchRegister);
 
         btnRegister.setOnClickListener(new OnClickListener() {
@@ -152,6 +81,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 startActivity(new Intent(LoginActivity.this, RegisterActivity.class));
             }
         });
+
+
+        SharedPreferences sharedPreferences = getSharedPreferences("mySharedPreference", MODE_PRIVATE);
+        String token = sharedPreferences.getString("tokenUser", null);
+
+        //check if the user is previously logged and redirect it to the home activity
+        if(token != null){
+            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+        }
 
     }
 
@@ -174,6 +112,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
+
+        final MyAsyncTask asyncTask = new MyAsyncTask();
 
         String url;
 
@@ -223,7 +163,86 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             url = url.replace(" ","");
             asyncTask.execute(url);
 
+
+            asyncTask.setListener(new IRequestListener() {
+
+                @Override
+                public void onSuccess(JSONObject object) {
+                    sharedPreferences = getSharedPreferences("mySharedPreference", 0);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    String firstName;
+                    String lastName;
+                    String email;
+                    String token;
+                    String msg;
+
+
+                    mEmailView.setError(null);
+                    mPasswordView.setError(null);
+                    View focusView;
+                    View focusView2;
+
+                    try {
+
+
+                        String codeTxt = object.getString("code");
+                        int code = Integer.parseInt(codeTxt);
+
+
+                        if(code == 0){
+                            JSONObject resultObject = object.getJSONObject("result");
+                            firstName = resultObject.getString("firstname");
+                            lastName = resultObject.getString("lastname");
+                            email = resultObject.getString("email");
+                            token = resultObject.getString("token");
+                            System.out.println("email : " + email);
+                            editor.putString("firstName",firstName);
+                            editor.putString("lastName",lastName);
+                            editor.putString("email",email);
+                            editor.putString("tokenUser",token);
+                            editor.commit();
+
+                            showProgress(true);
+
+                            Toast toast = Toast.makeText(getApplicationContext(), "You successfully logged", Toast.LENGTH_LONG);
+                            toast.show();
+
+                            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+
+                        }else{
+
+                            msg = object.getString("msg");
+
+                            mPasswordView.setError(getString(R.string.error_invalid_password));
+                            focusView = mPasswordView;
+                            mEmailView.setError(getString(R.string.error_invalid_email));
+                            focusView2 = mEmailView;
+                            focusView.requestFocus();
+                            focusView2.requestFocus();
+                            Toast toast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG);
+                            toast.show();
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
+                }
+
+
+                @Override
+                public void onFail() {
+                    Log.e("Error","test error onFailed");
+                }
+            });
+
         }
+
+
+
+
 
 
     }

@@ -55,7 +55,7 @@ public class MyAsyncTask extends AsyncTask<String, Void, String> {
 
             }
             br.close();
-
+            conn.disconnect();
             result = sb.toString();
 
 

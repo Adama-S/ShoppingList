@@ -12,7 +12,7 @@
 
     <!-- Login progress -->
     <ScrollView
-        android:id="@+id/login_form"
+        android:id="@+id/register_form"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -61,7 +61,7 @@
                 android:layout_height="wrap_content">
 
             <AutoCompleteTextView
-                android:id="@+id/firstname_register"
+                android:id="@+id/firstName_register"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="First Name"
@@ -95,11 +95,17 @@
                 android:text="Register"
                 android:textStyle="bold" />
 
+            <Button
+                android:text="Login"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/switchLogin" />
+
         </LinearLayout>
     </ScrollView>
 
     <ProgressBar
-        android:id="@+id/login_progress"
+        android:id="@+id/register_progress"
         style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
