@@ -1,12 +1,13 @@
 package com.example.adamJeann.shoppinglist;
 
-import android.app.AlertDialog;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.Context;
-import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.net.Uri;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -20,11 +21,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.appindexing.Thing;
-import com.google.android.gms.common.api.GoogleApiClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,22 +37,16 @@ import java.util.Arrays;
  */
 public class RegisterActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
-
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private RegisterTask mAuthTask = null;
+    private RegisterLoginTask mAuthTask = null;
 
     // UI references.
     private AutoCompleteTextView mEmailView;
     private EditText mPasswordView;
     private EditText mLastNameView;
     private EditText mFirstNameView;
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
 
 
     @Override
@@ -68,6 +58,12 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
         mFirstNameView = (AutoCompleteTextView) findViewById(R.id.firstname_register);
         mLastNameView = (AutoCompleteTextView) findViewById(R.id.lastName_register);
 
+
+        if(!isOnline()){
+            Toast toast = Toast.makeText(getApplicationContext(), "Please Check your internet access!", Toast.LENGTH_LONG);
+            toast.show();
+
+        }
 
         mPasswordView = (EditText) findViewById(R.id.password_register);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -81,6 +77,9 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             }
         });
 
+
+
+
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -89,10 +88,13 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             }
         });
 
+    }
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+    public boolean isOnline() {
+        ConnectivityManager cm =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo netInfo = cm.getActiveNetworkInfo();
+        return netInfo != null && netInfo.isConnectedOrConnecting();
     }
 
     @Override
@@ -110,50 +112,28 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
 
     }
 
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    public Action getIndexApiAction() {
-        Thing object = new Thing.Builder()
-                .setName("Register Page") // TODO: Define a title for the content shown.
-                // TODO: Make sure this auto-generated URL is correct.
-                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
-                .build();
-        return new Action.Builder(Action.TYPE_VIEW)
-                .setObject(object)
-                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
-                .build();
-    }
+
 
     @Override
     public void onStart() {
         super.onStart();
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client.connect();
-        AppIndex.AppIndexApi.start(client, getIndexApiAction());
     }
 
     @Override
     public void onStop() {
         super.onStop();
 
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        AppIndex.AppIndexApi.end(client, getIndexApiAction());
-        client.disconnect();
     }
 
-    private class RegisterTask extends AsyncTask<String, Void, String> {
+    private class RegisterLoginTask extends AsyncTask<String, Void, String> {
         /**
          * The system calls this to perform work in a worker thread and
          * delivers it the parameters given to AsyncTask.execute()
          */
         protected String doInBackground(String... urls) {
             URL url;
-            StringBuilder sb = null;
+            StringBuilder sb;
             String result = null;
             try {
                 url = new URL(urls[0]);
@@ -218,6 +198,17 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
                         System.out.println("FirstName : -- " + firstName);
                         System.out.println("LastName : -- " + lastName);
                         System.out.println("Email : -- " + email);
+
+                        //set the return data of api in session variable
+                        SharedPreferences sharedPreferences = getSharedPreferences("Register_pref",MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("MY_TOKEN", token);
+                        editor.putString("MY_FIRSTNAME", firstName);
+                        editor.putString("MY_LASTNAME", lastName);
+                        editor.putString("MY_EMAIL", email);
+
+                        editor.commit();
+
                         result = null;
 
                     }else{
@@ -243,6 +234,14 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
             }else{
                 Toast toast = Toast.makeText(getApplicationContext(), "You succefully register", Toast.LENGTH_LONG);
                 toast.show();
+                /*startActivity(new Intent(RegisterActivity.this, LoginActivity.class));*/
+
+                SharedPreferences sharedPreferences = getSharedPreferences("Register_pref", MODE_PRIVATE);
+                String email = sharedPreferences.getString("MY_EMAIL", null);
+
+                String url = "http://appspaces.fr/esgi/shopping_list/account/subscribe.php?email=" + email + "&password=" + mPasswordView.getText().toString();
+                url = url.replace(" ","");
+                (new RegisterLoginTask()).execute(url);
             }
 
 
@@ -305,7 +304,7 @@ public class RegisterActivity extends AppCompatActivity implements LoaderCallbac
 
             String url = "http://appspaces.fr/esgi/shopping_list/account/subscribe.php?email=" + email + "&password=" + password + "&firstname=" + firstName + "&lastname=" + lastName;
             url = url.replace(" ","");
-            (new RegisterTask()).execute(url);
+            (new RegisterLoginTask()).execute(url);
         }
     }
 
