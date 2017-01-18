@@ -1,15 +1,25 @@
 package com.example.adamJeann.shoppinglist;
 
 import android.app.LoaderManager;
+import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
+import com.google.android.gms.common.api.GoogleApiClient;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,14 +31,29 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Arrays;
 
+import Util.MyAsyncTask;
+import Util.Urls;
+
+import static android.R.string.cancel;
+
 public class CartActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    SharedPreferences sharedPreferences = null;
     private EditText mShoppingListName;
+    private String token;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cart);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("mySharedPreference", MODE_PRIVATE);
+        token = sharedPreferences.getString("tokenUser", null);
 
         mShoppingListName = (EditText) findViewById(R.id.shoppingListName);
 
@@ -39,15 +64,98 @@ public class CartActivity extends AppCompatActivity implements LoaderManager.Loa
                 attemptCreateShoppingList();
             }
         });
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     private void attemptCreateShoppingList() {
+
+        final MyAsyncTask asyncTask = new MyAsyncTask();
+
+        String url;
+
+        mShoppingListName.setError(null);
+
+        boolean cancel = false;
+        View focusView = null;
+
         String name = mShoppingListName.getText().toString();
 
-        String token = "88b34e862aa58698f2a950512dcfc277";
+        if (TextUtils.isEmpty(name)) {
+            mShoppingListName.setError(getString(R.string.error_field_required));
+            focusView = mShoppingListName;
+            cancel = true;
+        }
 
-        String url = "http://appspaces.fr/esgi/shopping_list/shopping_list/create.php?token=" + token + "&name=" + name;
-        (new CreateShoppingListTask()).execute(url);
+        if (cancel) {
+
+            focusView.requestFocus();
+        } else {
+
+            url = Urls.WS_CREATE_SHOPPINGLIST_URL + "?token=" + token + "&name=" + name;
+            url = url.replace(" ","");
+            asyncTask.execute(url);
+
+
+            asyncTask.setListener(new IRequestListener() {
+
+                @Override
+                public void onSuccess(JSONObject object) {
+                    sharedPreferences = getSharedPreferences("mySharedPreference", 0);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    String token;
+                    String name;
+                    String msg;
+
+
+                    mShoppingListName.setError(null);
+                    View focusView;
+
+                    try {
+
+                        String codeTxt = object.getString("code");
+                        int code = Integer.parseInt(codeTxt);
+
+                        if(code == 0){
+                            JSONObject resultObject = object.getJSONObject("result");
+                            name = resultObject.getString("name");
+                            editor.putString("Name",name);
+                            editor.commit();
+
+                            Toast toast = Toast.makeText(getApplicationContext(), "You successfully create shopping List", Toast.LENGTH_LONG);
+                            toast.show();
+
+                            startActivity(new Intent(CartActivity.this, HomeActivity.class));
+
+                        }else{
+
+                            msg = object.getString("msg");
+
+                            mShoppingListName.setError(getString(R.string.error_invalid_password));
+                            focusView = mShoppingListName;
+                            focusView.requestFocus();
+
+                            Toast toast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG);
+                            toast.show();
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
+                }
+
+
+                @Override
+                public void onFail() {
+                    Log.e("Error","test error onFailed");
+                }
+            });
+
+        }
     }
 
     @Override
@@ -57,113 +165,49 @@ public class CartActivity extends AppCompatActivity implements LoaderManager.Loa
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-
     }
 
-    private class CreateShoppingListTask extends AsyncTask<String, Void, String> {
-        /**
-         * The system calls this to perform work in a worker thread and
-         * delivers it the parameters given to AsyncTask.execute()
-         */
-        protected String doInBackground(String... urls) {
-            URL url;
-            StringBuilder sb = null;
-            String result = null;
-            try {
-                url = new URL(urls[0]);
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    public Action getIndexApiAction() {
+        Thing object = new Thing.Builder()
+                .setName("Cart Page") // TODO: Define a title for the content shown.
+                // TODO: Make sure this auto-generated URL is correct.
+                .setUrl(Uri.parse("http://[ENTER-YOUR-URL-HERE]"))
+                .build();
+        return new Action.Builder(Action.TYPE_VIEW)
+                .setObject(object)
+                .setActionStatus(Action.STATUS_TYPE_COMPLETED)
+                .build();
+    }
 
-                System.out.println("Urls : -- " + Arrays.toString(urls));
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(10000 /* milliseconds */);
-                conn.setConnectTimeout(15000 /* milliseconds */);
-                conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
-                conn.setRequestMethod("GET");
-                conn.setDoOutput(true);
+    @Override
+    public void onStart() {
+        super.onStart();
 
-                BufferedReader br;
-                conn.connect();
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        AppIndex.AppIndexApi.start(client, getIndexApiAction());
+    }
 
-                if (200 <= conn.getResponseCode() && conn.getResponseCode() <= 299) {
-                    br = new BufferedReader(new InputStreamReader((conn.getInputStream())));
-                } else {
-                    br = new BufferedReader(new InputStreamReader((conn.getErrorStream())));
-                }
+    @Override
+    public void onStop() {
+        super.onStop();
 
-                sb = new StringBuilder();
-                String output;
-                while ((output = br.readLine()) != null) {
-                    sb.append(output);
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        AppIndex.AppIndexApi.end(client, getIndexApiAction());
+        client.disconnect();
+    }
 
-                }
-                br.close();
+    private class CreateShoppingListTask {
 
-                result = sb.toString();
-
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return parseJson(result);
-        }
-
-        /**
-         * The system calls this to perform work in the UI thread and delivers
-         * the result from doInBackground()
-         */
-
-        private String parseJson(String result) {
-
-
-            if (result != null) {
-                JSONObject jsonResponse;
-                try {
-
-                    jsonResponse = new JSONObject(result);
-
-                    int code = jsonResponse.getInt("code");
-                    System.out.println("Code : -- " + code);
-
-                    if (code == 0) {
-                        JSONObject jsonObject = jsonResponse.getJSONObject("result");
-                        System.out.println("Result : -- " + jsonObject);
-                        String token = jsonObject.getString("token");
-                        String Name = jsonObject.getString("name");
-                        System.out.println("Token : -- " + token);
-                        System.out.println("Name : -- " + Name);
-                        result = null;
-
-                    } else {
-                        result = jsonResponse.getString("msg");
-
-                        System.out.println("MsgError : -- " + result);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                return result;
-            }
-
-            return null;
-        }
-
-        protected void onPostExecute(String result) {
-
-            if(result != null){
-                Toast toast = Toast.makeText(getApplicationContext(), result, Toast.LENGTH_LONG);
-                toast.show();
-            }else{
-                Toast toast = Toast.makeText(getApplicationContext(), "You succefully created", Toast.LENGTH_LONG);
-                toast.show();
-            }
-
-
-        }
     }
 }

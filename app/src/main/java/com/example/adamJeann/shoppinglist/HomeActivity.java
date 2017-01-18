@@ -18,8 +18,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.content.Context;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import Util.Urls;
+
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
+
+    String token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,8 +39,7 @@ public class HomeActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                startActivity(new Intent(HomeActivity.this, CartActivity.class));
             }
         });
 
@@ -45,6 +51,9 @@ public class HomeActivity extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        SharedPreferences sharedPreferences = getSharedPreferences("mySharedPreference", MODE_PRIVATE);
+        token = sharedPreferences.getString("tokenUser", null);
     }
 
     @Override
@@ -136,4 +145,5 @@ public class HomeActivity extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
 }
