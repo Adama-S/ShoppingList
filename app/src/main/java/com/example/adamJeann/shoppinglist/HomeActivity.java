@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -17,16 +18,32 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.content.Context;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.Console;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
+import Util.MyAsyncTask;
 import Util.Urls;
+import models.ShoppingList;
+
+import static Util.Urls.WS_LIST_SHOPPINGLIST_URL;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     String token;
+    SharedPreferences sharedPreferences = null;
+
+    ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +71,9 @@ public class HomeActivity extends AppCompatActivity
 
         SharedPreferences sharedPreferences = getSharedPreferences("mySharedPreference", MODE_PRIVATE);
         token = sharedPreferences.getString("tokenUser", null);
+
+        listView = (ListView) findViewById(R.id.listCard);
+        attemptGetShoppingList();
     }
 
     @Override
@@ -146,4 +166,78 @@ public class HomeActivity extends AppCompatActivity
         return true;
     }
 
+
+    private void attemptGetShoppingList() {
+
+        final MyAsyncTask asyncTask = new MyAsyncTask();
+
+        String url;
+
+        url = WS_LIST_SHOPPINGLIST_URL + "?token=" + token;
+
+        asyncTask.execute(url);
+
+        asyncTask.setListener(new IRequestListener() {
+
+            @Override
+            public void onSuccess(JSONObject object) {
+                sharedPreferences = getSharedPreferences("mySharedPreference", 0);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+
+                String name;
+                String createdDate;
+                Boolean completed;
+
+
+                try {
+
+                    String codeTxt = object.getString("code");
+                    int code = Integer.parseInt(codeTxt);
+
+                    if(code == 0){
+                        JSONArray shoppingListArray = object.getJSONArray("result");
+                        System.out.println((shoppingListArray));
+                        System.out.println((shoppingListArray.length()));
+
+                        ArrayList<ShoppingList> cards = new ArrayList<ShoppingList>();
+                        for(int i=0; i < shoppingListArray.length() ; i++) {
+                            JSONObject cardObject;
+                            cardObject = shoppingListArray.getJSONObject(i);
+                            int id = cardObject.getInt("id");
+                            name = cardObject.getString("name");
+                            createdDate = cardObject.getString("created_date");
+
+                            /*SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd");
+                            Date date = null;
+
+                            try {
+                                date = sdf.parse(createdDate);
+                            }catch(Exception ex){
+                                ex.printStackTrace();
+                            }*/
+
+                            ShoppingList sl = new ShoppingList(name, createdDate);
+                            cards.add(sl);
+                        }
+                        System.out.println(cards);
+                        ArrayAdapter<ShoppingList  > mArrayAdapter = new ArrayAdapter<ShoppingList>(HomeActivity.this,
+                                android.R.layout.simple_list_item_1, cards);
+                        listView.setAdapter(mArrayAdapter);
+
+
+                    }
+
+
+                }catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFail() {
+                Log.e("Error","test error onFailed");
+            }
+        });
+
+    }
 }
