@@ -18,8 +18,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.content.Context;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,12 +32,15 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import Util.MyAsyncTask;
 import Util.Urls;
 import models.ShoppingList;
+import models.ShoppingListAdapter;
 
 import static Util.Urls.WS_LIST_SHOPPINGLIST_URL;
+import static Util.Urls.WS_REMOVE_SHOPPINGLIST_URL;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -60,6 +65,8 @@ public class HomeActivity extends AppCompatActivity
             }
         });
 
+
+
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -74,6 +81,7 @@ public class HomeActivity extends AppCompatActivity
 
         listView = (ListView) findViewById(R.id.listCard);
         attemptGetShoppingList();
+
     }
 
     @Override
@@ -182,12 +190,11 @@ public class HomeActivity extends AppCompatActivity
             @Override
             public void onSuccess(JSONObject object) {
                 sharedPreferences = getSharedPreferences("mySharedPreference", 0);
-                SharedPreferences.Editor editor = sharedPreferences.edit();
 
+                int id;
                 String name;
                 String createdDate;
-                Boolean completed;
-
+                String completed;
 
                 try {
 
@@ -196,35 +203,35 @@ public class HomeActivity extends AppCompatActivity
 
                     if(code == 0){
                         JSONArray shoppingListArray = object.getJSONArray("result");
-                        System.out.println((shoppingListArray));
-                        System.out.println((shoppingListArray.length()));
 
-                        ArrayList<ShoppingList> cards = new ArrayList<ShoppingList>();
-                        for(int i=0; i < shoppingListArray.length() ; i++) {
-                            JSONObject cardObject;
-                            cardObject = shoppingListArray.getJSONObject(i);
-                            int id = cardObject.getInt("id");
-                            name = cardObject.getString("name");
-                            createdDate = cardObject.getString("created_date");
+                        final ArrayList<ShoppingList> cards = ShoppingList.fromJson(shoppingListArray);
 
-                            /*SimpleDateFormat sdf = new SimpleDateFormat("yyyy-mm-dd");
-                            Date date = null;
+                        ShoppingListAdapter mArrayAdapter = new ShoppingListAdapter(HomeActivity.this, cards);
 
-                            try {
-                                date = sdf.parse(createdDate);
-                            }catch(Exception ex){
-                                ex.printStackTrace();
-                            }*/
-
-                            ShoppingList sl = new ShoppingList(name, createdDate);
-                            cards.add(sl);
-                        }
-                        System.out.println(cards);
-                        ArrayAdapter<ShoppingList  > mArrayAdapter = new ArrayAdapter<ShoppingList>(HomeActivity.this,
-                                android.R.layout.simple_list_item_1, cards);
                         listView.setAdapter(mArrayAdapter);
+                        listView.setItemsCanFocus(false);
 
+                        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            public void onItemClick(AdapterView<?> parent, View view,
+                                                    int position, long id) {
+                                ShoppingList sl = cards.get(position);
+                                Toast.makeText(getApplicationContext(), "CLICKED", Toast.LENGTH_SHORT).show();
 
+                                System.out.println(sl.getId());
+                                int slId = sl.getId();
+
+                                //remplacer ProductActivity par l'activity qui affichera la liste des produits d'une shopping list
+                                Intent intent = new Intent(HomeActivity.this, ProductActivity.class);
+                                intent.putExtra("id", slId);
+                                startActivity(intent);
+                                /*
+                                Pour récuperer l'id dans la nouvelle activity
+
+                                Bundle b = getIntent().getExtras();
+                                int id = b.getInt("id");
+                                */
+                            }
+                        });
                     }
 
 
@@ -239,5 +246,45 @@ public class HomeActivity extends AppCompatActivity
             }
         });
 
+    }
+
+    public void DeleteShoppingList(View v, int position) {
+
+        ShoppingList sl = (ShoppingList) v.getTag();
+        int id  = sl.getId();
+
+        final MyAsyncTask asyncTask = new MyAsyncTask();
+
+        String url;
+
+        url = WS_REMOVE_SHOPPINGLIST_URL + "?token=" + token + "&id=" + id;
+        Toast.makeText(getApplicationContext(), "pos : "+ position , Toast.LENGTH_SHORT).show();
+        asyncTask.execute(url);
+
+        asyncTask.setListener(new IRequestListener() {
+            @Override
+            public void onSuccess(JSONObject object) {
+
+                try {
+
+                    String codeTxt = object.getString("code");
+                    int code = Integer.parseInt(codeTxt);
+                    System.out.println(code);
+                    if(code == 0){
+                        Toast.makeText(getApplicationContext(), "List successfully deleted" , Toast.LENGTH_SHORT).show();
+                    }
+
+
+                }catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            @Override
+            public void onFail() {
+                Log.e("Error","test error onFailed");
+            }
+        });
     }
 }

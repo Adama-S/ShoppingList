@@ -11,7 +11,8 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.adamJeann.shoppinglist.HomeActivity"
-    tools:showIn="@layout/app_bar_home">
+    tools:showIn="@layout/app_bar_home"
+    android:clickable="false">
 
     <TextView
         android:text="Card List"
@@ -30,6 +31,7 @@
         android:layout_below="@+id/titleListCard"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginTop="17dp" />
+        android:layout_marginTop="17dp"
+        android:clickable="true"/>
 
 </RelativeLayout>
