@@ -1,5 +1,12 @@
 package models;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -8,25 +15,53 @@ import java.util.Date;
 
 public class ShoppingList {
 
-    private Integer id;
+    public Integer id;
 
-    private String name;
+    public String name;
 
-    private String createdDate;
+    public Date createdDate;
 
-    private Boolean completed;
+    public Boolean completed;
 
-    public ShoppingList(Integer id, String name, String createdDate, Boolean completed) {
+    public ShoppingList(Integer id, String name, Date createdDate, Boolean completed) {
         this.id = id;
         this.name = name;
         this.createdDate = createdDate;
         this.completed = completed;
     }
 
-    public ShoppingList(String name, String createdDate) {
+    public ShoppingList(String name, Date createdDate) {
         this.name = name;
         this.createdDate = createdDate;
     }
+
+    public ShoppingList(JSONObject object){
+        try {
+            this.id = object.getInt("id");
+            this.name = object.getString("name");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            this.createdDate = dateFormat.parse(object.getString("created_date"));
+            this.completed = Boolean.valueOf (object.getString("completed"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static ArrayList<ShoppingList> fromJson(JSONArray jsonObjects) {
+        ArrayList<ShoppingList> shoppingLists = new ArrayList<ShoppingList>();
+        for (int i = 0; i < jsonObjects.length(); i++) {
+            try {
+                shoppingLists.add(new ShoppingList(jsonObjects.getJSONObject(i)));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return shoppingLists;
+    }
+
 
     public Integer getId() {
         return id;
@@ -44,11 +79,11 @@ public class ShoppingList {
         this.name = name;
     }
 
-    public String getCreatedDate() {
+    public Date getCreatedDate() {
         return createdDate;
     }
 
-    public void setCreatedDate(String createdDate) {
+    public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
     }
 
@@ -58,10 +93,5 @@ public class ShoppingList {
 
     public void setCompleted(Boolean completed) {
         this.completed = completed;
-    }
-
-    @Override
-    public String toString() {
-        return name + "\n " + createdDate;
     }
 }
