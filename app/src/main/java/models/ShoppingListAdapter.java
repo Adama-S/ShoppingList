@@ -1,24 +1,16 @@
 package models;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.support.design.widget.FloatingActionButton;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
-
 import com.example.adamJeann.shoppinglist.HomeActivity;
 import com.example.adamJeann.shoppinglist.R;
-
 import java.util.ArrayList;
 
-import Util.MyAsyncTask;
-
-import static Util.Urls.WS_REMOVE_SHOPPINGLIST_URL;
 
 
 /**
@@ -57,7 +49,7 @@ public class ShoppingListAdapter extends ArrayAdapter<ShoppingList> {
             @Override
             public  void onClick(View view){
                 if(mContext instanceof HomeActivity)
-                    ((HomeActivity) mContext).DeleteShoppingList(view, position);
+                    ((HomeActivity) mContext).DeleteShoppingList(view);
             }
         });
 

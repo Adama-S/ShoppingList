@@ -17,25 +17,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.content.Context;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import java.io.Console;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-
 import Util.MyAsyncTask;
-import Util.Urls;
 import models.ShoppingList;
 import models.ShoppingListAdapter;
 
@@ -233,34 +222,27 @@ public class HomeActivity extends AppCompatActivity
                             }
                         });
                     }
-
-
                 }catch (JSONException e) {
                     e.printStackTrace();
                 }
             }
-
             @Override
             public void onFail() {
                 Log.e("Error","test error onFailed");
             }
         });
-
     }
 
-    public void DeleteShoppingList(View v, int position) {
+    public void DeleteShoppingList(View v) {
 
-        ShoppingList sl = (ShoppingList) v.getTag();
+        final ShoppingList sl = (ShoppingList) v.getTag();
         int id  = sl.getId();
-
+        final ShoppingListAdapter mArrayAdapter = (ShoppingListAdapter) listView.getAdapter();
         final MyAsyncTask asyncTask = new MyAsyncTask();
 
         String url;
-
         url = WS_REMOVE_SHOPPINGLIST_URL + "?token=" + token + "&id=" + id;
-        Toast.makeText(getApplicationContext(), "pos : "+ position , Toast.LENGTH_SHORT).show();
         asyncTask.execute(url);
-
         asyncTask.setListener(new IRequestListener() {
             @Override
             public void onSuccess(JSONObject object) {
@@ -271,14 +253,13 @@ public class HomeActivity extends AppCompatActivity
                     int code = Integer.parseInt(codeTxt);
                     System.out.println(code);
                     if(code == 0){
+                        mArrayAdapter.remove(sl);
+                        listView.invalidateViews();
                         Toast.makeText(getApplicationContext(), "List successfully deleted" , Toast.LENGTH_SHORT).show();
                     }
-
-
                 }catch (JSONException e) {
                     e.printStackTrace();
                 }
-
             }
 
             @Override
