@@ -33,6 +33,7 @@ import java.util.Arrays;
 
 import Util.MyAsyncTask;
 import Util.Urls;
+import models.ShoppingList;
 
 import static android.R.string.cancel;
 
@@ -41,6 +42,7 @@ public class CartActivity extends AppCompatActivity implements LoaderManager.Loa
     SharedPreferences sharedPreferences = null;
     private EditText mShoppingListName;
     private String token;
+    private ShoppingList shoppingList;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -52,16 +54,31 @@ public class CartActivity extends AppCompatActivity implements LoaderManager.Loa
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cart);
 
+        final Intent intent = getIntent();
+
+        mShoppingListName = (EditText) findViewById(R.id.shoppingListName);
+        Button mActionButton = (Button) findViewById(R.id.shoppingListButton);
+
+        if(intent != null) {
+            shoppingList = (ShoppingList) intent.getSerializableExtra("ShoppingList");
+            System.out.println(shoppingList);
+            mActionButton.setText("Update");
+            mShoppingListName.setText(shoppingList.name);
+        }else{
+            mActionButton.setText("Creation");
+        }
+
         SharedPreferences sharedPreferences = getSharedPreferences("mySharedPreference", MODE_PRIVATE);
         token = sharedPreferences.getString("tokenUser", null);
 
-        mShoppingListName = (EditText) findViewById(R.id.shoppingListName);
-
-        Button mCreateButton = (Button) findViewById(R.id.shoppingListAddButton);
-        mCreateButton.setOnClickListener(new View.OnClickListener() {
+        mActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                attemptCreateShoppingList();
+                if(intent != null) {
+                    attemptUpdateShoppingList(shoppingList);
+                }else {
+                    attemptCreateShoppingList();
+                }
             }
         });
         // ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -124,6 +141,90 @@ public class CartActivity extends AppCompatActivity implements LoaderManager.Loa
                             editor.commit();
 
                             Toast toast = Toast.makeText(getApplicationContext(), "You successfully create shopping List", Toast.LENGTH_LONG);
+                            toast.show();
+
+                            startActivity(new Intent(CartActivity.this, HomeActivity.class));
+
+                        }else{
+
+                            msg = object.getString("msg");
+
+                            mShoppingListName.setError(getString(R.string.error_invalid_password));
+                            focusView = mShoppingListName;
+                            focusView.requestFocus();
+
+                            Toast toast = Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG);
+                            toast.show();
+                        }
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
+                }
+
+
+                @Override
+                public void onFail() {
+                    Log.e("Error","test error onFailed");
+                }
+            });
+
+        }
+    }
+
+    private void attemptUpdateShoppingList(ShoppingList shoppingList) {
+
+        final MyAsyncTask asyncTask = new MyAsyncTask();
+
+        String url;
+
+        mShoppingListName.setError(null);
+
+        boolean cancel = false;
+        View focusView = null;
+
+        String name = mShoppingListName.getText().toString();
+
+        if (TextUtils.isEmpty(name)) {
+            mShoppingListName.setError(getString(R.string.error_field_required));
+            focusView = mShoppingListName;
+            cancel = true;
+        }
+
+        if (cancel) {
+
+            focusView.requestFocus();
+        } else {
+
+            url = Urls.WS_EDIT_SHOPPINGLIST_URL + "?token=" + token + "&id=" + shoppingList.id + "&name=" + name;
+            url = url.replace(" ","");
+            asyncTask.execute(url);
+
+
+            asyncTask.setListener(new IRequestListener() {
+
+                @Override
+                public void onSuccess(JSONObject object) {
+                    sharedPreferences = getSharedPreferences("mySharedPreference", 0);
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+                    String name;
+                    String msg;
+
+
+                    mShoppingListName.setError(null);
+                    View focusView;
+
+                    try {
+
+                        String codeTxt = object.getString("code");
+                        int code = Integer.parseInt(codeTxt);
+
+                        if(code == 0){
+
+                            Toast toast = Toast.makeText(getApplicationContext(), "You successfully update shopping List", Toast.LENGTH_LONG);
                             toast.show();
 
                             startActivity(new Intent(CartActivity.this, HomeActivity.class));

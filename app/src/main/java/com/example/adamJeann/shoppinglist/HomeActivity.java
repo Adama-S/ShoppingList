@@ -268,4 +268,13 @@ public class HomeActivity extends AppCompatActivity
             }
         });
     }
+
+    public void redirectUpdateList(View v){
+
+        final ShoppingList sl = (ShoppingList) v.getTag();
+
+        Intent intent = new Intent(HomeActivity.this, CartActivity.class);
+        intent.putExtra("ShoppingList", sl);
+        startActivity(intent);
+    }
 }

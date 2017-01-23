@@ -1,12 +1,15 @@
 package models;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
+
+import com.example.adamJeann.shoppinglist.CartActivity;
 import com.example.adamJeann.shoppinglist.HomeActivity;
 import com.example.adamJeann.shoppinglist.R;
 import java.util.ArrayList;
@@ -50,6 +53,16 @@ public class ShoppingListAdapter extends ArrayAdapter<ShoppingList> {
             public  void onClick(View view){
                 if(mContext instanceof HomeActivity)
                     ((HomeActivity) mContext).DeleteShoppingList(view);
+            }
+        });
+
+        FloatingActionButton fabUpdate = (FloatingActionButton) convertView.findViewById(R.id.fabUpdate);
+        fabUpdate.setTag(sl);
+        fabUpdate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(mContext instanceof HomeActivity)
+                    ((HomeActivity) mContext).redirectUpdateList(view);
             }
         });
 

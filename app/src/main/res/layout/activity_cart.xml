@@ -27,7 +27,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
-        android:id="@+id/shoppingListAddButton"
+        android:id="@+id/shoppingListButton"
         android:layout_below="@+id/shoppingListName"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />

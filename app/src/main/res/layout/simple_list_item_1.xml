@@ -50,4 +50,18 @@
         app:useCompatPadding="false"
         android:soundEffectsEnabled="false" />
 
+    <android.support.design.widget.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        app:fabSize="mini"
+        app:srcCompat="@android:drawable/ic_menu_edit"
+        android:id="@+id/fabUpdate"
+        android:layout_marginRight="12dp"
+        android:layout_marginEnd="12dp"
+        app:backgroundTint="@android:color/holo_blue_bright"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/fabDelete"
+        android:layout_toStartOf="@+id/fabDelete" />
+
 </RelativeLayout>
