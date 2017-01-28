@@ -11,32 +11,28 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.example.adamJeann.shoppinglist.HomeActivity"
-    tools:showIn="@layout/app_bar_home">
-
-    <android.support.design.widget.FloatingActionButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        app:fabSize="mini"
-        app:srcCompat="@android:drawable/ic_input_add"
-        android:id="@+id/floatingActionButton"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="62dp"
-        android:layout_marginEnd="62dp" />
+    tools:showIn="@layout/app_bar_home"
+    android:clickable="false">
 
     <TextView
-        android:text="Products"
+        android:text="Card List"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/titleProduct"
+        android:id="@+id/titleListCard"
         android:textSize="24sp"
         android:layout_alignParentTop="true"
-        android:layout_toLeftOf="@+id/floatingActionButton"
-        android:layout_toStartOf="@+id/floatingActionButton"
         android:layout_marginRight="39dp"
         android:layout_marginEnd="39dp" />
+
+    <ListView
+        android:layout_height="match_parent"
+        android:id="@+id/listCard"
+        android:layout_width="match_parent"
+        android:layout_below="@+id/titleListCard"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginTop="17dp"
+        android:clickable="true"/>
 
     <ListView
         android:layout_width="match_parent"
@@ -46,6 +42,7 @@
         android:layout_alignParentStart="true"
         android:layout_marginLeft="18dp"
         android:layout_marginStart="18dp" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="300dp"

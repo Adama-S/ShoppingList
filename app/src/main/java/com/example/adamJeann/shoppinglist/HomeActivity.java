@@ -8,6 +8,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.util.Log;
+import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -16,9 +20,27 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.Toast;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.util.ArrayList;
+import Util.MyAsyncTask;
+import models.ShoppingList;
+import models.ShoppingListAdapter;
+
+import static Util.Urls.WS_LIST_SHOPPINGLIST_URL;
+import static Util.Urls.WS_REMOVE_SHOPPINGLIST_URL;
 
 public class HomeActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, CreateProduct.OnFragmentInteractionListener {
+
+    String token;
+    SharedPreferences sharedPreferences = null;
+
+    ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +48,14 @@ public class HomeActivity extends AppCompatActivity
         setContentView(R.layout.activity_home);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(HomeActivity.this, CartActivity.class));
+            }
+        });
 
 
 
@@ -38,9 +68,11 @@ public class HomeActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-
         SharedPreferences sharedPreferences = getSharedPreferences("mySharedPreference", MODE_PRIVATE);
-        String token = sharedPreferences.getString("tokenUser", null);
+        token = sharedPreferences.getString("tokenUser", null);
+
+        listView = (ListView) findViewById(R.id.listCard);
+        attemptGetShoppingList();
 
         Bundle bundle = new Bundle();
         bundle.putString("token", token);
@@ -51,7 +83,6 @@ public class HomeActivity extends AppCompatActivity
         fragmentTransaction.add(R.id.fragment_container, fragment)
                 .addToBackStack(null)
                 .commit();
-
 
     }
 
@@ -148,5 +179,120 @@ public class HomeActivity extends AppCompatActivity
     @Override
     public void onFragmentInteraction(Uri uri) {
 
+    }
+
+
+    private void attemptGetShoppingList() {
+
+        final MyAsyncTask asyncTask = new MyAsyncTask();
+
+        String url;
+
+        url = WS_LIST_SHOPPINGLIST_URL + "?token=" + token;
+
+        asyncTask.execute(url);
+
+        asyncTask.setListener(new IRequestListener() {
+
+            @Override
+            public void onSuccess(JSONObject object) {
+                sharedPreferences = getSharedPreferences("mySharedPreference", 0);
+
+                int id;
+                String name;
+                String createdDate;
+                String completed;
+
+                try {
+
+                    String codeTxt = object.getString("code");
+                    int code = Integer.parseInt(codeTxt);
+
+                    if(code == 0){
+                        JSONArray shoppingListArray = object.getJSONArray("result");
+
+                        final ArrayList<ShoppingList> cards = ShoppingList.fromJson(shoppingListArray);
+
+                        ShoppingListAdapter mArrayAdapter = new ShoppingListAdapter(HomeActivity.this, cards);
+
+                        listView.setAdapter(mArrayAdapter);
+                        listView.setItemsCanFocus(false);
+
+                        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                            public void onItemClick(AdapterView<?> parent, View view,
+                                                    int position, long id) {
+                                ShoppingList sl = cards.get(position);
+                                Toast.makeText(getApplicationContext(), "CLICKED", Toast.LENGTH_SHORT).show();
+
+                                System.out.println(sl.getId());
+                                int slId = sl.getId();
+
+                                //remplacer ProductActivity par l'activity qui affichera la liste des produits d'une shopping list
+                                Intent intent = new Intent(HomeActivity.this, ProductActivity.class);
+                                intent.putExtra("id", slId);
+                                startActivity(intent);
+                                /*
+                                Pour récuperer l'id dans la nouvelle activity
+
+                                Bundle b = getIntent().getExtras();
+                                int id = b.getInt("id");
+                                */
+                            }
+                        });
+                    }
+                }catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+            @Override
+            public void onFail() {
+                Log.e("Error","test error onFailed");
+            }
+        });
+    }
+
+    public void DeleteShoppingList(View v) {
+
+        final ShoppingList sl = (ShoppingList) v.getTag();
+        int id  = sl.getId();
+        final ShoppingListAdapter mArrayAdapter = (ShoppingListAdapter) listView.getAdapter();
+        final MyAsyncTask asyncTask = new MyAsyncTask();
+
+        String url;
+        url = WS_REMOVE_SHOPPINGLIST_URL + "?token=" + token + "&id=" + id;
+        asyncTask.execute(url);
+        asyncTask.setListener(new IRequestListener() {
+            @Override
+            public void onSuccess(JSONObject object) {
+
+                try {
+
+                    String codeTxt = object.getString("code");
+                    int code = Integer.parseInt(codeTxt);
+                    System.out.println(code);
+                    if(code == 0){
+                        mArrayAdapter.remove(sl);
+                        listView.invalidateViews();
+                        Toast.makeText(getApplicationContext(), "List successfully deleted" , Toast.LENGTH_SHORT).show();
+                    }
+                }catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFail() {
+                Log.e("Error","test error onFailed");
+            }
+        });
+    }
+
+    public void redirectUpdateList(View v){
+
+        final ShoppingList sl = (ShoppingList) v.getTag();
+
+        Intent intent = new Intent(HomeActivity.this, CartActivity.class);
+        intent.putExtra("ShoppingList", sl);
+        startActivity(intent);
     }
 }
