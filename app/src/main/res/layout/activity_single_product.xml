@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    android:descendantFocusability="blocksDescendants"
+    >
+
+
+                <TextView
+                    android:id="@+id/productName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/black"
+                    android:layout_marginLeft="10dp"
+                    android:textStyle="bold"
+                    tools:text="Title"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:clickable="false"
+                    />
+
+                <TextView
+                    android:id="@+id/productQuantity"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@android:color/black"
+                    android:layout_alignLeft="@+id/productName"
+                    android:layout_below="@+id/productName"
+                    tools:text="creation date"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:clickable="false"
+                    />
+
+                <android.support.design.widget.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    app:fabSize="mini"
+                    app:srcCompat="@android:drawable/ic_menu_delete"
+                    android:id="@+id/fabDelete"
+                    app:backgroundTint="@android:color/holo_red_dark"
+                    android:focusable="false"
+                    android:focusableInTouchMode="false"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_alignParentEnd="true"
+                    app:useCompatPadding="false"
+                    android:soundEffectsEnabled="false" />
+
+                <android.support.design.widget.FloatingActionButton
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clickable="true"
+                    app:fabSize="mini"
+                    app:srcCompat="@android:drawable/ic_menu_edit"
+                    android:id="@+id/fabUpdate"
+                    android:layout_marginRight="12dp"
+                    android:layout_marginEnd="12dp"
+                    app:backgroundTint="@android:color/holo_blue_bright"
+                    android:layout_alignParentTop="true"
+                    android:layout_toLeftOf="@+id/fabDelete"
+                    android:layout_toStartOf="@+id/fabDelete" />
+
+
+
+
+</RelativeLayout>

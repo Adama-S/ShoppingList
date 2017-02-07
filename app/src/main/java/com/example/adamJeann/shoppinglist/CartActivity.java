@@ -6,9 +6,8 @@ import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -24,18 +23,9 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Arrays;
-
 import Util.MyAsyncTask;
 import Util.Urls;
 import models.ShoppingList;
-
-import static android.R.string.cancel;
 
 public class CartActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -58,9 +48,10 @@ public class CartActivity extends AppCompatActivity implements LoaderManager.Loa
 
         mShoppingListName = (EditText) findViewById(R.id.shoppingListName);
         Button mActionButton = (Button) findViewById(R.id.shoppingListButton);
+        shoppingList = (ShoppingList) intent.getSerializableExtra("ShoppingList");
 
-        if(intent != null) {
-            shoppingList = (ShoppingList) intent.getSerializableExtra("ShoppingList");
+
+        if(shoppingList != null) {
             System.out.println(shoppingList);
             mActionButton.setText("Update");
             mShoppingListName.setText(shoppingList.name);
@@ -74,7 +65,7 @@ public class CartActivity extends AppCompatActivity implements LoaderManager.Loa
         mActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(intent != null) {
+                if(shoppingList != null) {
                     attemptUpdateShoppingList(shoppingList);
                 }else {
                     attemptCreateShoppingList();

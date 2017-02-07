@@ -6,11 +6,4 @@
         android:orderInCategory="100"
         android:title="@string/action_logout"
         app:showAsAction="never" />
-    <item
-        android:id="@+id/create_product"
-        android:title="Create a product"
-        app:showAsAction="never"
-        app:actionLayout="@layout/fragment_create_product"
-
-        />
 </menu>

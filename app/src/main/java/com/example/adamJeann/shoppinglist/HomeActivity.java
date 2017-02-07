@@ -1,32 +1,32 @@
 package com.example.adamJeann.shoppinglist;
 
 import android.app.AlertDialog;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.util.Log;
-import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
+
 import Util.MyAsyncTask;
 import models.ShoppingList;
 import models.ShoppingListAdapter;
@@ -35,11 +35,10 @@ import static Util.Urls.WS_LIST_SHOPPINGLIST_URL;
 import static Util.Urls.WS_REMOVE_SHOPPINGLIST_URL;
 
 public class HomeActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener, CreateProduct.OnFragmentInteractionListener {
+        implements NavigationView.OnNavigationItemSelectedListener, CreateNewProduct.OnFragmentInteractionListener {
 
     String token;
     SharedPreferences sharedPreferences = null;
-
     ListView listView;
 
     @Override
@@ -56,8 +55,6 @@ public class HomeActivity extends AppCompatActivity
                 startActivity(new Intent(HomeActivity.this, CartActivity.class));
             }
         });
-
-
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -76,14 +73,14 @@ public class HomeActivity extends AppCompatActivity
 
         Bundle bundle = new Bundle();
         bundle.putString("token", token);
-
+/*
         Fragment fragment = new CreateProduct();
         fragment.setArguments(bundle);
         FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
         fragmentTransaction.add(R.id.fragment_container, fragment)
                 .addToBackStack(null)
                 .commit();
-
+*/
     }
 
     @Override
@@ -176,6 +173,7 @@ public class HomeActivity extends AppCompatActivity
         return true;
     }
 
+
     @Override
     public void onFragmentInteraction(Uri uri) {
 
@@ -224,19 +222,10 @@ public class HomeActivity extends AppCompatActivity
                                 ShoppingList sl = cards.get(position);
                                 Toast.makeText(getApplicationContext(), "CLICKED", Toast.LENGTH_SHORT).show();
 
-                                System.out.println(sl.getId());
-                                int slId = sl.getId();
-
-                                //remplacer ProductActivity par l'activity qui affichera la liste des produits d'une shopping list
-                                Intent intent = new Intent(HomeActivity.this, ProductActivity.class);
-                                intent.putExtra("id", slId);
+                                int shoppingListId = sl.getId();
+                              Intent intent = new Intent(HomeActivity.this, ProductListActivity.class);
+                                intent.putExtra("id", shoppingListId);
                                 startActivity(intent);
-                                /*
-                                Pour récuperer l'id dans la nouvelle activity
-
-                                Bundle b = getIntent().getExtras();
-                                int id = b.getInt("id");
-                                */
                             }
                         });
                     }
@@ -269,7 +258,6 @@ public class HomeActivity extends AppCompatActivity
 
                     String codeTxt = object.getString("code");
                     int code = Integer.parseInt(codeTxt);
-                    System.out.println(code);
                     if(code == 0){
                         mArrayAdapter.remove(sl);
                         listView.invalidateViews();
