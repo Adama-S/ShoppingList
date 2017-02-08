@@ -1,7 +1,6 @@
 package models;
 
 import android.content.Context;
-import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,11 +8,11 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.example.adamJeann.shoppinglist.CartActivity;
 import com.example.adamJeann.shoppinglist.HomeActivity;
 import com.example.adamJeann.shoppinglist.R;
-import java.util.ArrayList;
 
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 
 /**
@@ -40,10 +39,15 @@ public class ShoppingListAdapter extends ArrayAdapter<ShoppingList> {
         // Lookup view for data population
         TextView tvName = (TextView) convertView.findViewById(R.id.tvName);
         TextView tvDate = (TextView) convertView.findViewById(R.id.tvDate);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yy HH:mm");
         // Populate the data into the template view using the data object
         tvName.setText(sl.name);
-        tvDate.setText(sl.createdDate.toString());
+        System.out.println("avec: " + dateFormat.format(sl.createdDate));
+        System.out.println("sans: " + sl.createdDate);
+        tvDate.setText(dateFormat.format(sl.createdDate));
         // Return the completed view to render on screen
+
 
         FloatingActionButton btDelete = (FloatingActionButton) convertView.findViewById(R.id.fabDelete);
         btDelete.setTag(sl);

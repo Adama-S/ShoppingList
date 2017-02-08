@@ -17,7 +17,9 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:background="?attr/colorPrimary"
-            app:popupTheme="@style/AppTheme.PopupOverlay" />
+            android:title="Shopping List"
+            app:popupTheme="@style/AppTheme.PopupOverlay"
+            app:titleTextAppearance="@android:style/TextAppearance.DeviceDefault" />
 
     </android.support.design.widget.AppBarLayout>
 
