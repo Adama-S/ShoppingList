@@ -39,9 +39,11 @@ public class ProductListAdapter extends ArrayAdapter<ProductList> {
 
         TextView productName = (TextView) convertView.findViewById(R.id.productName);
         TextView productQuantity = (TextView) convertView.findViewById(R.id.productQuantity);
+        TextView productPrice = (TextView) convertView.findViewById(R.id.productPrice);
 
         productName.setText(productList.name);
         productQuantity.setText(productList.quantity);
+        productPrice.setText(String.valueOf(productList.price + " €"));
 
         FloatingActionButton btDelete = (FloatingActionButton) convertView.findViewById(R.id.fabDelete);
         btDelete.setTag(productList);

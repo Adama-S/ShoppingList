@@ -29,11 +29,23 @@
                     android:textColor="@android:color/black"
                     android:layout_alignLeft="@+id/productName"
                     android:layout_below="@+id/productName"
-                    tools:text="creation date"
+                    tools:text="Product"
                     android:focusable="false"
                     android:focusableInTouchMode="false"
                     android:clickable="false"
                     />
+        <TextView
+        android:id="@+id/productPrice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@android:color/black"
+        android:layout_alignLeft="@+id/productQuantity"
+        android:layout_below="@+id/productQuantity"
+        tools:text="Price"
+        android:focusable="false"
+        android:focusableInTouchMode="false"
+        android:clickable="false"
+        />
 
                 <android.support.design.widget.FloatingActionButton
                     android:layout_width="wrap_content"
