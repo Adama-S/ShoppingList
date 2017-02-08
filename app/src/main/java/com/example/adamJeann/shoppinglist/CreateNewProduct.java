@@ -153,6 +153,7 @@ public class CreateNewProduct extends Fragment implements LoaderManager.LoaderCa
                     fragmentTransaction.replace(R.id.fragment_container, productListFragment);
                     fragmentTransaction.addToBackStack(null);
                     fragmentTransaction.commit();
+
                 }
             }
         });
@@ -348,11 +349,6 @@ public class CreateNewProduct extends Fragment implements LoaderManager.LoaderCa
         String productQuantityView = productQuantity.getText().toString();
         Double productPriceView = Double.valueOf(productPrice.getText().toString());
 
-        if(TextUtils.isEmpty(productQuantityView)){
-            productQuantity.setError(getString(R.string.error_field_required));
-            focusView = productQuantity;
-            cancel = true;
-        } else {
             if(TextUtils.isEmpty(productNameView)) {
                 if(TextUtils.isEmpty(productQuantityView)){
                     url = Urls.WS_EDIT_PRODUCT_URL + "?token=" + token + "&id=" + productId
@@ -374,7 +370,6 @@ public class CreateNewProduct extends Fragment implements LoaderManager.LoaderCa
                             + "&price=" + productPriceView;
                 }
             }
-        }
 
     }
 

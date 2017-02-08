@@ -2,6 +2,7 @@ package com.example.adamJeann.shoppinglist;
 
 import android.app.Fragment;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
@@ -72,28 +73,6 @@ public class ProductListActivity extends AppCompatActivity implements LoaderMana
                 .addToBackStack(null)
                 .commit();
 
-
-        // getListProducts();
-
-/*
-        sharedPreferences = getSharedPreferences("mySharedPreference", MODE_PRIVATE);
-        token = sharedPreferences.getString("tokenUser", null);
-
-        Bundle b = getIntent().getExtras();
-        shoppingListId = b.getInt("id");
-        Bundle bundle = new Bundle();
-        bundle.putString("token", token);
-        bundle.putString("shopping_list_id", String.valueOf(shoppingListId));
-
-        fragment.setArguments(bundle);
-        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit();
-
-        listView = (ListView) findViewById(R.id.listProduct);
-
-        getListProducts();*/
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
@@ -105,23 +84,19 @@ public class ProductListActivity extends AppCompatActivity implements LoaderMana
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
 
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
+        if (id == R.id.my_shopping_lists) {
+            Intent intent = new Intent(ProductListActivity.this, HomeActivity.class);
+            startActivity(intent);
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+    @Override
+    public void onBackPressed() {
+            finish();
     }
 
 
@@ -140,13 +115,19 @@ public class ProductListActivity extends AppCompatActivity implements LoaderMana
                 try {
                     String codeTxt = object.getString("code");
                     int code = Integer.parseInt(codeTxt);
-                    System.out.println(code);
-                    System.out.println("produit : " + productList.getName());
 
                     if (code == 0) {
-                        Log.e("Product name", productList.getName());
+
                         listView.invalidateViews();
-                        listView.refreshDrawableState();
+                        Bundle bundle = new Bundle();
+                        bundle.putString("token", token);
+                        bundle.putString("shopping_list_id", String.valueOf(shoppingListId));
+                        ProductListFragment productListFragment = new ProductListFragment();
+                        productListFragment.setArguments(bundle);
+                        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
+                        fragmentTransaction.replace(R.id.fragment_container, productListFragment);
+                        fragmentTransaction.addToBackStack(null);
+                        fragmentTransaction.commit();
 
                     }else{
                         System.out.println("List view else"+ listView.toString());
@@ -242,4 +223,6 @@ public class ProductListActivity extends AppCompatActivity implements LoaderMana
         AppIndex.AppIndexApi.end(client, getIndexApiAction());
         client.disconnect();
     }
+
+
 }

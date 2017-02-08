@@ -10,17 +10,19 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.adamJeann.shoppinglist.CartActivity">
 
-    <EditText
-        android:layout_width="wrap_content"
+    <android.support.design.widget.TextInputLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:text="Name"
-        android:ems="10"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:id="@+id/shoppingListName"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:id="@+id/shoppingName">
+        <android.support.design.widget.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textPersonName"
+            android:id="@+id/shoppingListName"
+            android:hint="Name"/>
+    </android.support.design.widget.TextInputLayout>
+
+
 
     <Button
         android:text="Créer Liste"
@@ -28,7 +30,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="14dp"
         android:id="@+id/shoppingListButton"
-        android:layout_below="@+id/shoppingListName"
+        android:layout_below="@+id/shoppingName"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true" />
 

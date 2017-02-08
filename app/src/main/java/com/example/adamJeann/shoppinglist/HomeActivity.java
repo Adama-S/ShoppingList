@@ -73,14 +73,6 @@ public class HomeActivity extends AppCompatActivity
 
         Bundle bundle = new Bundle();
         bundle.putString("token", token);
-/*
-        Fragment fragment = new CreateProduct();
-        fragment.setArguments(bundle);
-        FragmentTransaction fragmentTransaction = getFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.fragment_container, fragment)
-                .addToBackStack(null)
-                .commit();
-*/
     }
 
     @Override
@@ -154,19 +146,6 @@ public class HomeActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -220,7 +199,6 @@ public class HomeActivity extends AppCompatActivity
                             public void onItemClick(AdapterView<?> parent, View view,
                                                     int position, long id) {
                                 ShoppingList sl = cards.get(position);
-                                Toast.makeText(getApplicationContext(), "CLICKED", Toast.LENGTH_SHORT).show();
 
                                 int shoppingListId = sl.getId();
                               Intent intent = new Intent(HomeActivity.this, ProductListActivity.class);
@@ -258,6 +236,7 @@ public class HomeActivity extends AppCompatActivity
 
                     String codeTxt = object.getString("code");
                     int code = Integer.parseInt(codeTxt);
+                    System.out.println(code);
                     if(code == 0){
                         mArrayAdapter.remove(sl);
                         listView.invalidateViews();
